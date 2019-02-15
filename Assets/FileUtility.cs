@@ -59,8 +59,8 @@ namespace FileUtility
                 bytes[counter++] = (byte) c;
             }
 
-            Buffer.BlockCopy(new[] { speed }, 0, bytes, counter, sizeof(float)); //I miss pointers D:
-            counter += sizeof(float);
+            Buffer.BlockCopy(new[] { speed }, 0, bytes, counter, 4); //I miss pointers D:
+            counter += 4;
 
             bytes[counter++] = (byte) ((Notes.Length & 0xFF0000) >> 16);
             bytes[counter++] = (byte) ((Notes.Length & 0x00FF00) >> 8);
@@ -68,11 +68,11 @@ namespace FileUtility
 
             foreach (Note n in Notes)
             {
-                Buffer.BlockCopy(new[] { n.StartTime }, 0, bytes, counter, sizeof(float));
-                counter += sizeof(float);
+                Buffer.BlockCopy(new[] { n.StartTime }, 0, bytes, counter, 4);
+                counter += 4;
                 bytes[counter++] = n.Sound;
-                Buffer.BlockCopy(new[] { n.Length }, 0, bytes, counter, sizeof(float));
-                counter += sizeof(float);
+                Buffer.BlockCopy(new[] { n.Length }, 0, bytes, counter, 4);
+                counter += 4;
             }
 
             try
