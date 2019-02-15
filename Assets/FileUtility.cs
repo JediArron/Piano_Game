@@ -21,6 +21,16 @@ namespace FileUtility
             this.Sound = Sound;
             this.Length = Length;
         }
+
+        public Note()
+        {
+
+        }
+
+        public override string ToString()
+        {
+            return "NOTE: " + StartTime + " | " + Sound + " | " + Length;
+        }
     }
 
     public static class Write
@@ -88,12 +98,78 @@ namespace FileUtility
         }
     }
 
-    /*public static class Read
+    public static class Read
     {
-        public static bool FromFile()
+        public static bool FromFile(string path, out string Username, out string Levelname, out float speed, out Note[] Notes)
         {
             //No implementation for V001001 because there's never been functions to save it.
-            return true;
+
+            byte[] bytes;
+            try
+            {
+                bytes = File.ReadAllBytes(path);
+            }
+            catch
+            {
+                Username = null;
+                Levelname = null;
+                speed = -1;
+                Notes = null;
+                return false;
+            }
+
+            short version = (short) ((bytes[4] << 8) | bytes[5]);
+            if (bytes[4] == 0 && bytes[5] == 1) //first 4 bytes not currently used, but may be useful for other implementations
+            {
+                int counter = 6;
+                ushort UNLength = (ushort) (bytes[counter++] << 8);
+                UNLength |= bytes[counter++];
+                StringBuilder UserNameBuilder = new StringBuilder();
+                for (ushort i = 0; i < UNLength; i++)
+                    UserNameBuilder.Append((char) bytes[counter++]);
+                Username = UserNameBuilder.ToString();
+
+
+                ushort LNLength = (ushort) (bytes[counter++] << 8);
+                LNLength |= bytes[counter++];
+                StringBuilder LevelNameBuilder = new StringBuilder();
+                for (ushort i = 0; i < LNLength; i++)
+                    LevelNameBuilder.Append((char) bytes[counter++]);
+                Levelname = LevelNameBuilder.ToString();
+
+
+                speed = -1; //needed so it doesnt complain about speed being unassigned in the next line
+                float[] speedTmpArray = new float[1];
+                Buffer.BlockCopy(bytes, counter, speedTmpArray, 0, 4);
+                speed = speedTmpArray[0];
+                counter += 4;
+
+
+                int noteNum = (bytes[counter] << 16) | (bytes[counter + 1] << 8) | bytes[counter + 2];
+                counter += 3;
+                Notes = new Note[noteNum];
+                for (int i = 0; i < Notes.Length; i++)
+                    Notes[i] = new Note();
+                for (int i = 0; i < noteNum; i++)
+                {
+                    var StartTimeTmpArray = new float[1];
+                    Buffer.BlockCopy(bytes, counter, StartTimeTmpArray, 0, 4);
+                    Notes[i].StartTime = StartTimeTmpArray[0];
+                    counter += 4;
+                    Notes[i].Sound = bytes[counter++];
+                    var LengthTmpArray = new float[1];
+                    Buffer.BlockCopy(bytes, counter, LengthTmpArray, 0, 4);
+                    Notes[i].Length = LengthTmpArray[0];
+                    counter += 4;
+                }
+
+                return true;
+            }
+            Username = null;
+            Levelname = null;
+            speed = -1;
+            Notes = null;
+            return false;
         }
-    }*/
+    }
 }
